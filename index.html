@@ -32,7 +32,7 @@ html{-webkit-text-size-adjust:100%}body{margin:0;padding-top:env(safe-area-inset
   --good:#4FCB99; --bad:#F27E73; --warn:#F0B95A; --soft:#1F283B; --cat-l:66%; color-scheme:dark }
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
-.wrap{max-width:1080px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
+.wrap{margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
 h1,h2,.num{font-family:var(--display)}
 h1{font-size:24px;margin:0;letter-spacing:-.01em}
 h1 small{font-family:var(--body);font-size:13px;font-weight:400;color:var(--muted);margin-left:8px}
@@ -91,7 +91,7 @@ label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mute
 .stat .num{font-size:20px;overflow-wrap:anywhere}
 .stat .sub{font-size:12px;color:var(--muted)}
 .stat.in .num{color:var(--good)} .stat.out .num{color:var(--bad)}
-@media (max-width:420px){ .three{grid-template-columns:1fr} }
+@media (max-width:520px){ .three{grid-template-columns:1fr 1fr} .three .stat:last-child{grid-column:1/-1} }
 .bars{display:flex;align-items:flex-end;gap:2px;height:72px;border-bottom:1px solid var(--line)}
 .bars i{flex:1 1 0;background:var(--accent);opacity:.35;border-radius:2px 2px 0 0;min-height:0}
 .bars i.on{opacity:1} .bars i.zero{background:transparent}
@@ -126,15 +126,42 @@ label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mute
 .verdict ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px}
 .note{white-space:pre-wrap}
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;font-size:13.5px;max-width:calc(100% - 32px);z-index:20}
+
+/* pages + navigation */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:30}
+.wrap{max-width:760px}
+#app{display:flex;flex-direction:column;gap:16px}
+.view{display:flex;flex-direction:column;gap:16px;min-width:0}
+a.btn{display:inline-block;text-decoration:none;text-align:center;color:inherit;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:11px 14px;flex:1 1 140px;font-weight:500}
+a.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.tabs{display:flex;background:var(--surface);border-top:1px solid var(--line);z-index:25;position:fixed;left:0;right:0;bottom:0;padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+.tabs a{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px 6px;text-decoration:none;color:var(--muted);font-size:11px;font-weight:500;min-width:0}
+.tabs a[aria-current="page"]{color:var(--accent);font-weight:600}
+.tabs a.addtab{color:var(--ink)}
+.tabs a.addtab svg{background:var(--accent);color:var(--accent-ink);border-radius:50%;padding:7px;width:38px;height:38px;margin-top:-16px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.wrap{padding-bottom:110px}
+#toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+@media (min-width:821px){
+  .tabs{left:50%;right:auto;transform:translateX(-50%);bottom:18px;width:min(520px,calc(100% - 32px));border:1px solid var(--line);border-radius:16px;padding:2px 8px;box-shadow:0 6px 24px rgba(0,0,0,.14)}
+}
+input,select,button{font-size:16px}
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;display:block;min-height:44px;max-width:100%;text-align:left}
+input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and-time-value{text-align:left}
+label{overflow:hidden}
+.seg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.seg button{font-size:13.5px;padding:9px 4px}
+@media (max-width:520px){ .seg{grid-template-columns:repeat(2,minmax(0,1fr))} .top{gap:8px} h1{font-size:22px} .monthnav select{padding:7px 4px;font-size:15px} .monthnav button{padding:7px 10px} }
+.chip{font-size:14px;padding:8px 13px}
+button.quiet.small{font-size:13px}
 </style>
 
 </head>
 <body>
 <div class="wrap">
   <div class="top">
-    <h1>Masroofi<small>Sherif's money, day by day</small></h1>
+    <h1>Masroofi</h1>
     <div class="monthnav">
-      <button id="prevM" aria-label="Previous month">‹</button><select id="selM" aria-label="Month"></select><select id="selY" aria-label="Year"></select><button id="nextM" aria-label="Next month">›</button><button id="todayM" class="quiet">Today</button><button id="signOut" class="quiet" hidden>Sign out</button>
+      <button id="prevM" aria-label="Previous month">‹</button><select id="selM" aria-label="Month"></select><select id="selY" aria-label="Year"></select><button id="nextM" aria-label="Next month">›</button><button id="todayM" class="quiet">Today</button>
     </div>
   </div>
 
@@ -161,20 +188,39 @@ label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mute
     <div class="formfoot"><button class="primary" type="submit">Save</button></div>
   </form>
 
-  <div id="app" hidden style="display:flex;flex-direction:column;gap:16px">
-    <div class="bal">
+  <div id="app" hidden>
+    <section class="view" data-view="home">
+      <div class="bal">
       <div class="b total"><div class="lab"><i class="dot"></i><span id="totalLab">Total</span></div><div class="num" id="bTotal"></div></div>
       <div class="b wallet"><div class="lab"><i class="dot"></i>Wallet (cash)</div><div class="num" id="bWallet"></div></div>
       <div class="b bank"><div class="lab"><i class="dot"></i>Bank</div><div class="num" id="bBank"></div></div>
     </div>
-    <div class="balactions">
+      <div class="balactions">
       <button type="button" id="fixBtn">Fix my balances</button>
       <span class="muted small" style="align-self:center" id="balNote"></span>
     </div>
-
-    <div class="cols">
-      <div class="col">
-        <form class="card" id="addForm">
+      <div class="card">
+          <div class="cardhead"><h2 id="sumTitle">This month</h2></div>
+          <div class="three">
+            <div class="stat in"><span class="lab">Money in</span><span class="num" id="sInc"></span><span class="sub" id="sCarry"></span></div>
+            <div class="stat out"><span class="lab">Spent</span><span class="num" id="sExp"></span><span class="sub" id="sToday"></span></div>
+            <div class="stat"><span class="lab" id="sLeftLab">Left now</span><span class="num" id="sLeft"></span><span class="sub" id="sInv"></span></div>
+          </div>
+          <span class="muted small" id="avgLine"></span>
+        </div>
+      <div class="card">
+        <div class="cardhead"><h2>Today</h2><span class="muted small" id="todayCount"></span></div>
+        <div class="num" id="todaySpent" style="font-size:26px"></div>
+        <div class="formfoot"><a class="btn primary" href="#add">Add an entry</a><a class="btn" href="#log">See the log</a></div>
+      </div>
+      <div class="card" id="noteCard" hidden>
+          <div class="cardhead"><h2>Note</h2><span class="muted small" id="noteDate"></span></div>
+          <div class="note" id="noteText"></div>
+        </div>
+      <button id="signOut" class="quiet" hidden style="align-self:flex-start">Sign out</button>
+    </section>
+    <section class="view" data-view="add" hidden>
+      <form class="card" id="addForm">
           <div class="seg" id="typeSeg">
             <button type="button" data-type="exp" aria-pressed="true">Expense</button>
             <button type="button" data-type="inc" aria-pressed="false">Money in</button>
@@ -202,39 +248,42 @@ label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mute
           <p class="muted small" id="typeHelp" style="margin:0"></p>
           <div class="formfoot"><button class="primary" type="submit" id="fSubmit">Add expense</button><button type="button" id="fCancel" hidden>Cancel</button></div>
         </form>
-
-        <div class="card">
+    </section>
+    <section class="view" data-view="log" hidden>
+      <div class="card">
           <div class="cardhead"><h2>Daily log</h2><span class="muted small" id="logCount"></span></div>
           <div id="log"></div>
         </div>
-      </div>
-
-      <div class="col">
-        <div class="card">
-          <div class="cardhead"><h2 id="sumTitle">This month</h2></div>
-          <div class="three">
-            <div class="stat in"><span class="lab">Money in</span><span class="num" id="sInc"></span><span class="sub" id="sCarry"></span></div>
-            <div class="stat out"><span class="lab">Spent</span><span class="num" id="sExp"></span><span class="sub" id="sToday"></span></div>
-            <div class="stat"><span class="lab" id="sLeftLab">Left now</span><span class="num" id="sLeft"></span><span class="sub" id="sInv"></span></div>
-          </div>
-          <div>
+    </section>
+    <section class="view" data-view="insights" hidden>
+      <div class="card">
+<div>
             <div class="cardhead" style="margin-bottom:6px"><h2>Spending per day</h2><span class="muted small">one bar for each day</span></div>
             <div class="bars" id="bars" role="img" aria-label="Spending per day this month"></div>
             <div class="axis" id="axis"></div>
           </div>
-          <span class="muted small" id="avgLine"></span>
-          <div>
+          </div>
+<div class="card">
+<div>
             <div class="cardhead" style="margin-bottom:6px"><h2>Your money over the month</h2><span class="muted small">bank + wallet, end of each day</span></div>
             <div id="lineBox"></div>
           </div>
         </div>
-
-        <div class="card">
+      <div class="card">
           <div class="cardhead"><h2>Where it went</h2></div>
           <div id="catList" style="display:flex;flex-direction:column;gap:10px"></div>
         </div>
-
-        <div class="card">
+      <div class="card">
+          <div class="cardhead"><h2>Can I afford it?</h2></div>
+          <div class="row">
+            <label>What is it?<input id="aName" maxlength="40" placeholder="e.g. new headphones"></label>
+            <label>Price (EGP)<input id="aPrice" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"></label>
+          </div>
+          <div id="aOut" class="muted small">Type a price and I'll check it against your balance and how fast you usually spend.</div>
+        </div>
+    </section>
+    <section class="view" data-view="goals" hidden>
+      <div class="card">
           <div class="cardhead"><h2>Goals</h2><button type="button" class="quiet" id="goalNew">+ Add goal</button></div>
           <div id="goalList" style="display:flex;flex-direction:column;gap:14px"></div>
           <form id="goalForm" hidden style="display:flex;flex-direction:column;gap:10px">
@@ -246,17 +295,7 @@ label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mute
             <div class="formfoot"><button class="primary" type="submit">Save goal</button><button type="button" id="gCancel">Cancel</button><button type="button" class="quiet danger" id="gDelete" hidden>Delete goal</button></div>
           </form>
         </div>
-
-        <div class="card">
-          <div class="cardhead"><h2>Can I afford it?</h2></div>
-          <div class="row">
-            <label>What is it?<input id="aName" maxlength="40" placeholder="e.g. new headphones"></label>
-            <label>Price (EGP)<input id="aPrice" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"></label>
-          </div>
-          <div id="aOut" class="muted small">Type a price and I'll check it against your balance and how fast you usually spend.</div>
-        </div>
-
-        <div class="card">
+      <div class="card">
           <div class="cardhead"><h2>Thndr investments</h2><span><span class="muted small" id="thDate"></span> <button type="button" class="quiet" id="thEdit">Update</button></span></div>
           <div id="thList" style="display:flex;flex-direction:column;gap:8px"></div>
           <form id="thForm" hidden style="display:flex;flex-direction:column;gap:10px">
@@ -266,15 +305,16 @@ label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mute
             <div class="formfoot"><button class="primary" type="submit">Save</button><button type="button" id="thCancel">Cancel</button></div>
           </form>
         </div>
-
-        <div class="card" id="noteCard" hidden>
-          <div class="cardhead"><h2>Note</h2><span class="muted small" id="noteDate"></span></div>
-          <div class="note" id="noteText"></div>
-        </div>
-      </div>
-    </div>
+    </section>
   </div>
 </div>
+<nav class="tabs" id="tabs" hidden aria-label="Sections">
+  <a href="#home" data-tab="home"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/></svg><span>Home</span></a>
+  <a href="#log" data-tab="log"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg><span>Log</span></a>
+  <a href="#add" data-tab="add" class="addtab"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Add</span></a>
+  <a href="#insights" data-tab="insights"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Insights</span></a>
+  <a href="#goals" data-tab="goals"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/></svg><span>Goals</span></a>
+</nav>
 <div id="toast" hidden role="status"></div>
 
 <script src="vendor/supabase.js"></script>
@@ -357,7 +397,7 @@ function render(){
   if(needSetup&&!S.setupMode)S.setupMode='first';
   if(!needSetup&&S.setupMode==='first')S.setupMode=null;
   $('#setup').hidden=!S.setupMode;
-  $('#app').hidden=needSetup;
+  $('#app').hidden=needSetup;$('#tabs').hidden=needSetup;
   if(needSetup)return;
   const list=allTx(),mi=monthInfo(list,S.month);
   const bal=mi.isNow||S.month>today().slice(0,7)?balances(list,null):balances(list,mi.next);
@@ -369,6 +409,7 @@ function render(){
   $('#sInc').innerHTML=money(mi.inc);
   $('#sCarry').textContent=mi.carry==null?'First month, nothing carried over':'+ '+fmt(mi.carry)+' carried over from last month';
   $('#sExp').innerHTML=money(mi.exp);
+  $('#todaySpent').innerHTML=money(monthInfo(list,today().slice(0,7)).todaySpent)+' <span class="egp">spent</span>';{const n=list.filter(x=>x.d===today()).length;$('#todayCount').textContent=n?n+' entr'+(n===1?'y':'ies'):'Nothing logged yet'}
   $('#sToday').textContent=mi.isNow?'Today: '+fmt(mi.todaySpent)+' EGP':mi.inM.filter(x=>x.t==='exp').length+' expenses';
   $('#sLeftLab').textContent=mi.isNow?'Left now':'Left at month end';
   $('#sLeft').innerHTML=money(bal.total);
@@ -394,7 +435,7 @@ function renderLog(mi,cl){
   const days={};for(const x of mi.inM){if(x.t==='adj'&&!x.note)x.note='Balance fix';(days[x.d]=days[x.d]||[]).push(x)}
   const keys=Object.keys(days).sort().reverse();
   $('#logCount').textContent=mi.inM.length?mi.inM.length+' entr'+(mi.inM.length===1?'y':'ies'):'';
-  if(!keys.length){$('#log').innerHTML='<div class="empty">Nothing recorded for this month yet.<br>Add what you spent today in the form above.</div>';return}
+  if(!keys.length){$('#log').innerHTML='<div class="empty">Nothing recorded for this month yet.<br>Tap Add to record what you spent.</div>';return}
   const od=openDate();
   $('#log').innerHTML=keys.map(d=>{
     const rows=days[d].slice().reverse(),spent=rows.reduce((s,x)=>s+(x.t==='exp'?num(x.amt):0),0);
@@ -530,7 +571,7 @@ $('#log').addEventListener('click',e=>{
     else if(a==='del2'){S.confirmDel=null;S.openRow=null;delTx(id)}
     else if(a==='edit'){const x=allTx().find(t=>t.id===id);if(!x)return;
       S.editing={id:x.id,m:x.m,ts:x.ts||Date.now()};S.type=x.t;S.cat=x.cat||S.cat;S.src=x.t==='inc'?(x.to||'bank'):(x.src||'wallet');
-      $('#fAmt').value=x.amt;$('#fDate').value=x.d;$('#fTime').value=x.tm||nowTime();$('#fNote').value=x.note||'';renderForm();renderCats();$('#addForm').scrollIntoView({behavior:'smooth',block:'start'})}
+      $('#fAmt').value=x.amt;$('#fDate').value=x.d;$('#fTime').value=x.tm||nowTime();$('#fNote').value=x.note||'';renderForm();renderCats();location.hash='add'}
     return}
   const row=e.target.closest('.tx');if(!row)return;S.confirmDel=null;S.openRow=S.openRow===row.dataset.id?null:row.dataset.id;render()});
 $('#selM').innerHTML=MONTHS.map((n,i)=>'<option value="'+(i+1)+'">'+n+'</option>').join('');
@@ -578,6 +619,13 @@ $('#thForm').addEventListener('submit',e=>{e.preventDefault();
   const d=new Date(),doc={items:items,updatedAt:d.getDate()+' '+MONTHS[d.getMonth()].slice(0,3)+' '+d.getFullYear()};
   write(async()=>{await S.db.doc('app/thndr').set(doc);toast('Thndr updated')});$('#thForm').hidden=true});$('#aName').addEventListener('input',()=>renderAfford());
 
+/* ---------- pages ---------- */
+const VIEWS=['home','log','add','insights','goals'];
+function showView(){let v=(location.hash||'').replace('#','');if(VIEWS.indexOf(v)<0)v='home';
+  document.querySelectorAll('.view').forEach(e=>{e.hidden=e.dataset.view!==v});
+  document.querySelectorAll('#tabs a').forEach(a=>{if(a.dataset.tab===v)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+  window.scrollTo(0,0)}
+window.addEventListener('hashchange',showView);showView();
 /* ---------- start ---------- */
 const CFG=window.MASROOFI_CONFIG||{};
 function shim(sb,uid){
@@ -596,7 +644,7 @@ function start(){
   if(!window.supabase||!CFG.url||!CFG.anonKey){$('#loadingText').textContent='Masroofi is not set up yet: the database settings are missing.';return}
   const sb=window.supabase.createClient(CFG.url,CFG.anonKey,{auth:{persistSession:true,autoRefreshToken:true}});
   async function boot(session){
-    if(!session){$('#loading').hidden=true;$('#app').hidden=true;$('#setup').hidden=true;$('#login').hidden=false;$('#signOut').hidden=true;return}
+    if(!session){$('#loading').hidden=true;$('#app').hidden=true;$('#setup').hidden=true;$('#login').hidden=false;$('#signOut').hidden=true;$('#tabs').hidden=true;return}
     $('#login').hidden=true;$('#signOut').hidden=false;$('#loading').hidden=false;$('#loadingText').textContent='Loading your numbers…';
     const db=shim(sb,session.user.id);S.db=db;
     db.collection('months').onSnapshot(snap=>{const m={};snap.docs.forEach(d=>{m[d.id]=d.data()||{}});S.months=m;S.gotMonths=true;render()});
