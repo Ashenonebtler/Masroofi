@@ -43,7 +43,12 @@ h2{font-size:15px;margin:0;font-weight:600}
 .line{width:100%;height:auto;display:block}
 .line text{font:11px var(--body);fill:var(--muted)}
 button{font:inherit;color:inherit;cursor:pointer;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input:focus,input:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+input[type=number]{-moz-appearance:textfield;appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.chkrow{flex-direction:row;align-items:center;gap:8px;font-size:13px;margin-top:-2px}
+.chkrow input{width:18px;height:18px;min-height:0;accent-color:var(--accent)}
 button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
 button.quiet{border-color:transparent;background:transparent;color:var(--muted);padding:6px 8px}
 button.danger{color:var(--bad)}
@@ -57,6 +62,9 @@ label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mute
 
 /* balances band */
 .bal{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.bal .b.total{grid-column:1/-1}
+.b.thndr{text-decoration:none;color:inherit}.b.thndr .dot{background:var(--good)}
+.bsub{font-size:12px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
 .bal .b{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:0}
 .bal .b .lab{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
 .bal .b .num{font-size:28px;line-height:1.15;overflow-wrap:anywhere}
@@ -65,7 +73,7 @@ label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mute
 .b.total{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .b.total .lab,.b.total .egp{color:var(--bg);opacity:.75} .b.total .dot{background:var(--bg)}
 .balactions{display:flex;gap:8px;flex-wrap:wrap}
-@media (max-width:560px){ .bal{grid-template-columns:1fr 1fr} .bal .b.total{grid-column:1/-1;order:-1} .bal .b .num{font-size:24px} }
+@media (max-width:560px){ .bal{grid-template-columns:1fr 1fr} .bal .b.thndr{grid-column:1/-1} .bal .b .num{font-size:24px} }
 
 .cols{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;align-items:start}
 .col{display:flex;flex-direction:column;gap:16px;min-width:0}
@@ -109,7 +117,7 @@ label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mute
 .tx .what{min-width:0;overflow-wrap:anywhere}
 .tx .what span.sub{display:block;font-size:12.5px;color:var(--muted)}
 .tx .amt{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
-.tx .amt.plus{color:var(--good)} .tx .amt.move{color:var(--muted)}
+.tx .amt.plus{color:var(--good)} .tx .amt.move{color:var(--bank)}
 .tag{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-left:6px;color:var(--muted);vertical-align:1px}
 .tag.bank{color:var(--bank);border-color:var(--bank)}
 .txact{display:flex;gap:8px;padding:8px 0 10px;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:center}
@@ -194,6 +202,7 @@ button.quiet.small{font-size:13px}
       <div class="b total"><div class="lab"><i class="dot"></i><span id="totalLab">Total</span></div><div class="num" id="bTotal"></div></div>
       <div class="b wallet"><div class="lab"><i class="dot"></i>Wallet (cash)</div><div class="num" id="bWallet"></div></div>
       <div class="b bank"><div class="lab"><i class="dot"></i>Bank</div><div class="num" id="bBank"></div></div>
+      <a class="b thndr" href="#goals"><div class="lab"><i class="dot"></i>Thndr</div><div class="num" id="bThndr"></div><div class="bsub" id="bThndrSub"></div></a>
     </div>
       <div class="balactions">
       <button type="button" id="fixBtn">Fix my balances</button>
@@ -401,8 +410,10 @@ function render(){
   if(needSetup)return;
   const list=allTx(),mi=monthInfo(list,S.month);
   const bal=mi.isNow||S.month>today().slice(0,7)?balances(list,null):balances(list,mi.next);
-  $('#totalLab').textContent=mi.isNow?'Total right now':'Total at month end';
-  $('#bTotal').innerHTML=money(bal.total);$('#bWallet').innerHTML=money(bal.wallet);$('#bBank').innerHTML=money(bal.bank);
+  const TH=thndrNow(list);
+  $('#totalLab').textContent=mi.isNow?'Everything you have':'Bank + wallet at month end';
+  $('#bTotal').innerHTML=money(mi.isNow?bal.total+TH.total:bal.total);
+  $('#bThndr').innerHTML=money(TH.total);$('#bThndrSub').textContent=fmt(TH.cash)+' cash · '+fmt(TH.held)+' invested';$('#bWallet').innerHTML=money(bal.wallet);$('#bBank').innerHTML=money(bal.bank);
   $('#balNote').textContent=bal.wallet<=0&&mi.isNow?'Your wallet is empty, so cash expenses now come out of the bank.':'';
 
   $('#sumTitle').textContent=mi.isNow?'This month':MONTHS[mo-1]+' '+y;
@@ -439,12 +450,12 @@ function renderLog(mi,cl){
   const od=openDate();
   $('#log').innerHTML=keys.map(d=>{
     const rows=days[d].slice().reverse(),spent=rows.reduce((s,x)=>s+(x.t==='exp'?num(x.amt):0),0);
-    return '<div class="day"><div class="dayhead"><span>'+esc(dayLabel(d))+'</span><span class="num">'+(spent?'−'+fmt(spent):'')+'</span></div>'+rows.map(x=>{
+    return '<div class="day"><div class="dayhead"><span>'+esc(dayLabel(d))+'</span><span class="num">'+(spent?'−'+fmt(spent):'')+(function(){const mv=rows.reduce((s,x)=>s+(x.t==='inv'?num(x.amt):0),0);return mv?' <span class="small" style="color:var(--bank);font-weight:500">'+fmt(mv)+' to Thndr</span>':''})()+'</span></div>'+rows.map(x=>{
       let title,sub=x.note||'',amt,cls='';const a=num(x.amt);
       if(x.t==='exp'){title='<i class="dot" style="background:hsl('+hue(x.cat,cl)+' 62% var(--cat-l));margin-right:7px"></i>'+esc(x.cat||'Other')+(x.src==='bank'?'<span class="tag bank">bank</span>':(x.spill>0?'<span class="tag bank">'+fmt(x.spill)+' from bank</span>':''));amt='−'+fmt(a)}
       else if(x.t==='inc'){title='Money in<span class="tag">'+(x.to==='wallet'?'to wallet':'to bank')+'</span>';amt='+'+fmt(a);cls='plus'}
       else if(x.t==='atm'){title='Cash withdrawal<span class="tag">bank → wallet</span>';amt=fmt(a);cls='move'}
-      else if(x.t==='inv'){title='Sent to Thndr<span class="tag bank">bank</span>';amt=fmt(a);cls='move'}
+      else if(x.t==='inv'){title='Sent to Thndr<span class="tag bank">from bank</span><span class="tag">saving, not spending</span>';amt='−'+fmt(a);cls='move'}
       else {title='Balance fix';amt='';cls='move';sub='Bank '+(num(x.bank)>=0?'+':'')+fmt(num(x.bank))+', wallet '+(num(x.wallet)>=0?'+':'')+fmt(num(x.wallet))}
       if(x.d<od)title+='<span class="tag">before start</span>';
       const open=S.openRow===x.id;
@@ -490,12 +501,19 @@ function renderLine(list,mi){
     '<path d="'+area+'" fill="var(--accent)" opacity=".14"/><path d="'+path+'" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'+
     '<circle cx="'+x(e[0])+'" cy="'+yv(e[1])+'" r="4.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/></svg>';
 }
+function thndrNow(list){
+  const th=S.thndr||{},items=th.items?Object.keys(th.items).map(k=>th.items[k]).filter(h=>h&&!h.deleted):[];
+  const asOf=num(th.cashAsOf);let cash=num(th.cash);
+  for(const x of (list||allTx()))if(x.t==='inv'&&num(x.ts)>asOf)cash+=num(x.amt);
+  const held=items.reduce((a,h)=>a+num(h.value),0);
+  return {cash:cash,held:held,total:cash+held,items:items};
+}
 function renderThndr(bal){
-  const th=S.thndr,items=th&&th.items?Object.keys(th.items).map(k=>th.items[k]).filter(h=>h&&!h.deleted):[];
+  const th=S.thndr,TH=thndrNow(),items=TH.items;
   $('#thDate').textContent=th&&th.updatedAt?'Updated '+th.updatedAt:'';
-  if(!items.length){$('#thList').innerHTML='<span class="muted">Tap Update to add what you hold in Thndr, like your MTF and gold.</span>';return}
-  const tot=items.reduce((a,h)=>a+num(h.value),0);
-  $('#thList').innerHTML=items.map(h=>'<div class="catrow"><span>'+esc(h.name)+(h.note?' <span class="muted small">'+esc(h.note)+'</span>':'')+'</span><span class="n">'+fmt(num(h.value))+'</span></div>').join('')+
+  if(!items.length&&!TH.cash){$('#thList').innerHTML='<span class="muted">Tap Update to add what you hold in Thndr, like your MTF and gold.</span>';return}
+  const tot=TH.total;
+  $('#thList').innerHTML='<div class="catrow"><span>Thndr wallet <span class="muted small">cash, not invested yet</span></span><span class="n">'+fmt(TH.cash)+'</span></div>'+items.map(h=>'<div class="catrow"><span>'+esc(h.name)+(h.note?' <span class="muted small">'+esc(h.note)+'</span>':'')+'</span><span class="n">'+fmt(num(h.value))+'</span></div>').join('')+
     '<div class="catrow" style="border-top:1px solid var(--line);padding-top:8px"><b>In Thndr</b><span class="n">'+fmt(tot)+' EGP</span></div>'+
     '<div class="catrow"><span class="muted">Everything you have (bank + wallet + Thndr)</span><span class="n">'+fmt(tot+bal.total)+' EGP</span></div>'+
     '<span class="muted small">Prices move daily, so the Thndr app has the live value. Tap Update after you buy or sell.</span>';
@@ -609,14 +627,14 @@ $('#goalForm').addEventListener('submit',e=>{e.preventDefault();
   $('#goalForm').hidden=true});
 $('#aPrice').addEventListener('input',()=>renderAfford());
 $('#thEdit').addEventListener('click',()=>{const items=(S.thndr&&S.thndr.items)||{};
-  $('#thRows').innerHTML=Object.keys(items).filter(k=>items[k]&&!items[k].deleted).map(k=>'<label>'+esc(items[k].name)+' (EGP)<input data-th="'+esc(k)+'" type="number" inputmode="decimal" step="0.01" min="0" value="'+num(items[k].value)+'"></label>').join('');
+  $('#thRows').innerHTML='<label>Thndr wallet cash (EGP)<input id="thCash" type="number" inputmode="decimal" step="0.01" min="0" value="'+Math.round(thndrNow().cash*100)/100+'"></label>'+Object.keys(items).filter(k=>items[k]&&!items[k].deleted).map(k=>'<label>'+esc(items[k].name)+' (EGP)<input data-th="'+esc(k)+'" type="number" inputmode="decimal" step="0.01" min="0" value="'+num(items[k].value)+'"></label><label class="chkrow"><input type="checkbox" data-sell="'+esc(k)+'"'+(items[k].note==='waiting to be sold'?' checked':'')+'> Waiting to be sold</label>').join('');
   $('#thNewName').value='';$('#thNewVal').value='';$('#thForm').hidden=false});
 $('#thCancel').addEventListener('click',()=>{$('#thForm').hidden=true});
 $('#thForm').addEventListener('submit',e=>{e.preventDefault();
   const items=JSON.parse(JSON.stringify((S.thndr&&S.thndr.items)||{}));
-  document.querySelectorAll('#thRows [data-th]').forEach(i=>{const k=i.dataset.th,v=num(i.value);if(v>0){items[k].value=v;delete items[k].note}else items[k].deleted=true});
+  document.querySelectorAll('#thRows [data-th]').forEach(i=>{const k=i.dataset.th,v=num(i.value);if(v>0){items[k].value=v;const c=document.querySelector('#thRows [data-sell="'+k+'"]');if(c&&c.checked)items[k].note='waiting to be sold';else delete items[k].note}else items[k].deleted=true});
   const nn=$('#thNewName').value.trim(),nv=num($('#thNewVal').value);if(nn&&nv>0)items['h'+Date.now().toString(36)]={name:nn,value:nv};
-  const d=new Date(),doc={items:items,updatedAt:d.getDate()+' '+MONTHS[d.getMonth()].slice(0,3)+' '+d.getFullYear()};
+  const d=new Date(),doc={items:items,cash:num($('#thCash').value),cashAsOf:Date.now(),mig:(S.thndr&&S.thndr.mig)||0,updatedAt:d.getDate()+' '+MONTHS[d.getMonth()].slice(0,3)+' '+d.getFullYear()};
   write(async()=>{await S.db.doc('app/thndr').set(doc);toast('Thndr updated')});$('#thForm').hidden=true});$('#aName').addEventListener('input',()=>renderAfford());
 
 /* ---------- pages ---------- */
@@ -652,7 +670,13 @@ function start(){
       snap.docs.forEach(d=>{const v=d.data()||{};if(d.id==='settings')st=v;else if(d.id==='goals'){gl=v.items||{};ge=true}else if(d.id==='advice')ad=v;else if(d.id==='thndr')th=v});
       S.thndr=th;S.settings=st;S.goals=gl;S.goalsExists=ge;S.advice=ad;S.gotApp=true;render()});
     S.gotMonths=S.gotApp=false;
-    try{await db.load();S.gotMonths=S.gotApp=true;render()}catch(e){console.error(e);$('#loadingText').textContent="Your numbers can't be reached right now. Check your internet and reload the page."}
+    try{await db.load();S.gotMonths=S.gotApp=true;render();
+      if(S.settings&&S.thndr&&num(S.thndr.mig)<1){
+        const d={mig:1,updatedAt:'17 Nov 2026',cash:221.18,cashAsOf:Date.parse('2026-11-17T08:50:00Z'),
+          items:{gold:{name:'Thndr Gold',value:56.9},abr:{name:'Bareeq (ABR)',value:221,note:'waiting to be sold'}}};
+        await db.doc('app/thndr').set(d);
+      }
+    }catch(e){console.error(e);$('#loadingText').textContent="Your numbers can't be reached right now. Check your internet and reload the page."}
   }
   $('#login').addEventListener('submit',async e=>{e.preventDefault();$('#lErr').hidden=true;$('#lBtn').disabled=true;
     const r=await sb.auth.signInWithPassword({email:$('#lEmail').value.trim(),password:$('#lPass').value});$('#lBtn').disabled=false;
