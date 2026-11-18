@@ -671,9 +671,9 @@ function start(){
       S.thndr=th;S.settings=st;S.goals=gl;S.goalsExists=ge;S.advice=ad;S.gotApp=true;render()});
     S.gotMonths=S.gotApp=false;
     try{await db.load();S.gotMonths=S.gotApp=true;render();
-      if(S.settings&&S.thndr&&num(S.thndr.mig)<1){
-        const d={mig:1,updatedAt:'17 Nov 2026',cash:221.18,cashAsOf:Date.parse('2026-11-17T08:50:00Z'),
-          items:{gold:{name:'Thndr Gold',value:56.9},abr:{name:'Bareeq (ABR)',value:221,note:'waiting to be sold'}}};
+      if(S.settings&&S.thndr&&num(S.thndr.mig)<2){
+        const d={mig:2,updatedAt:'18 Nov 2026',cash:0.05,cashAsOf:Date.parse('2026-11-18T13:40:00Z'),
+          items:{mtf:{name:'Misr Takaful (MTF)',value:441},gold:{name:'Thndr Gold',value:286.99,note:'230.95 buy completing'}}};
         await db.doc('app/thndr').set(d);
       }
     }catch(e){console.error(e);$('#loadingText').textContent="Your numbers can't be reached right now. Check your internet and reload the page."}
