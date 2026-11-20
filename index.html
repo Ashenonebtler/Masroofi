@@ -680,7 +680,12 @@ function start(){
       if(S.settings&&S.thndr&&num(S.thndr.mig)<3){
         const ids=Object.keys(S.goals).filter(k=>S.goals[k]&&/stellar/i.test(S.goals[k].name||''));
         if(ids.length){const b={items:{}};ids.forEach(k=>{b.items[k]={done:'Purchased by a friend 🎁'}});await db.doc('app/goals').update(b)}
-        await db.doc('app/thndr').update({mig:3});
+        await db.doc('app/thndr').update({mig:3});S.thndr.mig=3;
+      }
+      if(S.settings&&S.thndr&&num(S.thndr.mig)<4){
+        const b={items:{x_rivals_1120:{t:'exp',d:'2026-11-20',tm:'10:50',amt:1093.63,cat:'Games',src:'bank',note:'Marvel Rivals Lattice ($20) for a friend, incl. 31.85 fee',ts:Date.parse('2026-11-20T08:50:00Z'),deleted:false}}};
+        const ref=db.doc('months/2026-11');if(S.months['2026-11'])await ref.update(b);else await ref.set(b);
+        await db.doc('app/thndr').update({mig:4});
       }
     }catch(e){console.error(e);$('#loadingText').textContent="Your numbers can't be reached right now. Check your internet and reload the page."}
   }
