@@ -481,6 +481,7 @@ function renderForm(){
 function renderGoals(){
   const ids=Object.keys(S.goals).filter(k=>S.goals[k]&&!S.goals[k].deleted);
   $('#goalList').innerHTML=ids.length?ids.map(id=>{const g=S.goals[id],t=num(g.target),s=num(g.saved),p=t>0?Math.min(100,s/t*100):0;
+    if(g.done)return '<div class="goal"><div class="gh"><b>'+esc(g.name)+'</b><span class="num">Done</span></div><div class="track"><i style="width:100%"></i></div><div class="gh"><span class="muted small">'+esc(g.done)+'</span><button type="button" class="quiet small" data-goal="'+esc(id)+'">Update</button></div></div>';
     return '<div class="goal"><div class="gh"><b>'+esc(g.name)+'</b><span class="num">'+fmt(s)+' / '+fmt(t)+'<span class="egp">EGP</span></span></div><div class="track"><i style="width:'+p+'%"></i></div><div class="gh"><span class="muted small">'+(p>=100?'Reached. Enjoy it!':Math.round(p)+'% there, '+fmt(Math.max(0,t-s))+' EGP to go')+'</span><button type="button" class="quiet small" data-goal="'+esc(id)+'">Update</button></div></div>'}).join('')
     :'<span class="muted">No goals yet. Add something you are saving for.</span>';
 }
@@ -674,7 +675,12 @@ function start(){
       if(S.settings&&S.thndr&&num(S.thndr.mig)<2){
         const d={mig:2,updatedAt:'18 Nov 2026',cash:0.05,cashAsOf:Date.parse('2026-11-18T13:40:00Z'),
           items:{mtf:{name:'Misr Takaful (MTF)',value:441},gold:{name:'Thndr Gold',value:286.99,note:'230.95 buy completing'}}};
-        await db.doc('app/thndr').set(d);
+        await db.doc('app/thndr').set(d);S.thndr=d;
+      }
+      if(S.settings&&S.thndr&&num(S.thndr.mig)<3){
+        const ids=Object.keys(S.goals).filter(k=>S.goals[k]&&/stellar/i.test(S.goals[k].name||''));
+        if(ids.length){const b={items:{}};ids.forEach(k=>{b.items[k]={done:'Purchased by a friend 🎁'}});await db.doc('app/goals').update(b)}
+        await db.doc('app/thndr').update({mig:3});
       }
     }catch(e){console.error(e);$('#loadingText').textContent="Your numbers can't be reached right now. Check your internet and reload the page."}
   }
